@@ -63,6 +63,25 @@ npx expo start
 5. Backend returns generated image URL + mapped products
 6. Mobile opens `purchase_url` in in-app browser or external browser
 
+## Real AI Provider (Replicate)
+
+Backend supports two modes:
+- `AI_PROVIDER=mock` -> local demo behavior
+- `AI_PROVIDER=replicate` -> live provider calls
+
+Set these in `services/api/.env`:
+
+```bash
+AI_PROVIDER=replicate
+AI_PROVIDER_API_KEY=r8_...
+REPLICATE_MODEL_VERSION=<replicate_model_version_id>
+```
+
+How it works:
+- `POST /v1/try-on/request` creates a Replicate prediction
+- `GET /v1/try-on/{job_id}` fetches prediction status/output
+- Completed prediction output URL is returned as `generated_image_url`
+
 ## Apple Store Readiness Checklist
 
 - Add `NSCameraUsageDescription` and photo library permissions in `app.json`
