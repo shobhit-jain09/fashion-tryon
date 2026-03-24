@@ -9,16 +9,21 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { fetchTryOnResult, requestTryOn } from "./src/api";
+import { fetchTryOnResult, requestTryOn, uploadPersonImage } from "./src/api";
+
+const CATEGORIES = ["casual", "formal", "streetwear", "sportswear"];
 
 export default function App() {
   const [imageUri, setImageUri] = useState(null);
   const [stylePrompt, setStylePrompt] = useState("minimal streetwear look");
+  const [category, setCategory] = useState("casual");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [statusText, setStatusText] = useState("");
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -32,21 +37,45 @@ export default function App() {
     if (!pick.canceled) setImageUri(pick.assets[0].uri);
   };
 
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return;
+
+    const shot = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!shot.canceled) setImageUri(shot.assets[0].uri);
+  };
+
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const pollResult = async (jobId) => {
+    for (let i = 0; i < 12; i += 1) {
+      const job = await fetchTryOnResult(jobId);
+      setStatusText(`Job status: ${job.status}`);
+      if (job.status === "completed" || job.status === "failed") return job;
+      await wait(1000);
+    }
+    throw new Error("Try-on timed out. Please try again.");
+  };
+
   const onGenerate = async () => {
     if (!imageUri) return;
     setLoading(true);
     setResult(null);
+    setStatusText("Uploading your image...");
     try {
-      // For local MVP, backend expects a URL. Replace with real upload endpoint.
-      const payload = await requestTryOn(
-        "https://picsum.photos/800/1200",
-        stylePrompt,
-        "casual"
-      );
-      const job = await fetchTryOnResult(payload.job_id);
+      const upload = await uploadPersonImage(imageUri);
+      setStatusText("Creating try-on job...");
+      const payload = await requestTryOn(upload.image_url, stylePrompt, category);
+      setStatusText("Generating outfit...");
+      const job = await pollResult(payload.job_id);
       setResult(job);
+      setStatusText("");
     } catch (error) {
       setResult({ status: "failed", error_message: String(error) });
+      setStatusText("");
     } finally {
       setLoading(false);
     }
@@ -56,7 +85,10 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>AI Fashion Try-On</Text>
-        <Button title="Pick Your Photo" onPress={pickImage} />
+        <View style={styles.actions}>
+          <Button title="Pick Photo" onPress={pickImage} />
+          <Button title="Take Photo" onPress={takePhoto} />
+        </View>
         {imageUri ? <Image source={{ uri: imageUri }} style={styles.preview} /> : null}
 
         <TextInput
@@ -68,6 +100,22 @@ export default function App() {
         <Button title="Generate Outfit" onPress={onGenerate} />
 
         {loading ? <ActivityIndicator style={styles.loader} /> : null}
+        {statusText ? <Text>{statusText}</Text> : null}
+
+        <Text style={styles.subtitle}>Category</Text>
+        <View style={styles.categories}>
+          {CATEGORIES.map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[styles.chip, category === item ? styles.chipActive : null]}
+              onPress={() => setCategory(item)}
+            >
+              <Text style={category === item ? styles.chipTextActive : styles.chipText}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {result?.generated_image_url ? (
           <View style={styles.resultBlock}>
@@ -95,6 +143,7 @@ export default function App() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
   container: { padding: 20, gap: 12 },
+  actions: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
   title: { fontSize: 24, fontWeight: "700" },
   subtitle: { fontSize: 18, fontWeight: "600", marginTop: 10 },
   preview: { width: "100%", height: 360, borderRadius: 10, marginTop: 10 },
@@ -107,4 +156,9 @@ const styles = StyleSheet.create({
   loader: { marginTop: 12 },
   resultBlock: { marginTop: 14, gap: 10 },
   product: { borderWidth: 1, borderColor: "#eee", borderRadius: 8, padding: 10, gap: 6 },
+  categories: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: { borderWidth: 1, borderColor: "#ddd", borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6 },
+  chipActive: { backgroundColor: "#111", borderColor: "#111" },
+  chipText: { color: "#333" },
+  chipTextActive: { color: "#fff" },
 });

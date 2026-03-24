@@ -1,5 +1,21 @@
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8010";
 
+export async function uploadPersonImage(imageUri) {
+  const formData = new FormData();
+  formData.append("image", {
+    uri: imageUri,
+    name: "person.jpg",
+    type: "image/jpeg",
+  });
+
+  const response = await fetch(`${API_BASE_URL}/v1/try-on/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Failed to upload image");
+  return response.json();
+}
+
 export async function requestTryOn(personImageUrl, stylePrompt, category) {
   const response = await fetch(`${API_BASE_URL}/v1/try-on/request`, {
     method: "POST",

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.routes.try_on import router as try_on_router
 
@@ -14,6 +15,7 @@ app.add_middleware(
 )
 
 app.include_router(try_on_router)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")
