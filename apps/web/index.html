@@ -31,6 +31,24 @@
         <pre class="output" id="outBackend" hidden></pre>
       </section>
 
+      <section class="card">
+        <h2>Dresses & outfits (Myntra / Flipkart–style)</h2>
+        <p class="catalog-explainer">
+          Pick a real outfit tile — purchase links open official category or PDP-style routes.
+          For <strong>live Flipkart listings</strong>, add affiliate keys in backend <code>.env</code> and search below.
+        </p>
+        <div class="catalog-toolbar row">
+          <button type="button" class="btn" id="btnLoadCatalog">Refresh catalog</button>
+          <label class="field-inline grow">
+            <span>Flipkart keyword search</span>
+            <input type="text" id="flipkartQuery" placeholder="e.g. women anarkali kurta" />
+          </label>
+          <button type="button" class="btn secondary" id="btnFlipkartSearch">Search Flipkart</button>
+        </div>
+        <div class="catalog-grid" id="catalogGrid"></div>
+        <p class="hint" id="catalogHint"></p>
+      </section>
+
       <section class="card grid-two">
         <div>
           <h2>Your photo</h2>

@@ -320,6 +320,75 @@ h1 {
   color: var(--muted);
 }
 
+.catalog-explainer {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.catalog-toolbar {
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.catalog-toolbar .grow {
+  flex: 1 1 220px;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.65rem;
+  min-height: 2rem;
+}
+
+.catalog-tile {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.catalog-tile:hover {
+  border-color: var(--muted);
+}
+
+.catalog-tile.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.catalog-tile img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.catalog-tile .cap {
+  padding: 0.35rem 0.45rem;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.catalog-tile .cap strong {
+  display: block;
+  font-size: 0.78rem;
+}
+
+.catalog-tile .retail {
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 code {
   font-size: 0.88em;
   background: var(--bg);

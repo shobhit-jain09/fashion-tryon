@@ -22,15 +22,35 @@ export async function uploadPersonImage(imageUri) {
   return response.json();
 }
 
-export async function requestTryOn(personImageUrl, stylePrompt, category) {
+export async function fetchCatalog(category, limit = 16) {
+  const url = `${API_BASE_URL}/v1/catalog?category=${encodeURIComponent(category)}&limit=${limit}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Failed to fetch catalog");
+  return response.json();
+}
+
+export async function requestTryOn(personImageUrl, stylePrompt, category, selectedProduct) {
+  const body = {
+    person_image_url: personImageUrl,
+    style_prompt: stylePrompt,
+    category,
+  };
+  if (selectedProduct) {
+    body.selected_product = {
+      id: selectedProduct.id,
+      title: selectedProduct.title,
+      brand: selectedProduct.brand,
+      price: selectedProduct.price,
+      currency: selectedProduct.currency || "INR",
+      image_url: selectedProduct.image_url,
+      purchase_url: selectedProduct.purchase_url,
+      retailer: selectedProduct.retailer || null,
+    };
+  }
   const response = await fetch(`${API_BASE_URL}/v1/try-on/request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      person_image_url: personImageUrl,
-      style_prompt: stylePrompt,
-      category,
-    }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error("Failed to request try-on");
   return response.json();

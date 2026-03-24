@@ -11,15 +11,31 @@ class Product(BaseModel):
     title: str
     brand: str
     price: float
-    currency: str = "USD"
+    currency: str = "INR"
     image_url: HttpUrl
     purchase_url: HttpUrl
+    retailer: str | None = None
+
+
+class SelectedProductPick(BaseModel):
+    """Send when the chosen dress came from Flipkart search or another client-side list."""
+
+    id: str
+    title: str
+    brand: str = "Brand"
+    price: float = 0
+    currency: str = "INR"
+    image_url: HttpUrl
+    purchase_url: HttpUrl
+    retailer: str | None = None
 
 
 class TryOnRequest(BaseModel):
     person_image_url: HttpUrl
     style_prompt: str
     category: Literal["casual", "formal", "streetwear", "sportswear"] = "casual"
+    selected_product_id: str | None = None
+    selected_product: SelectedProductPick | None = None
 
 
 class TryOnResponse(BaseModel):

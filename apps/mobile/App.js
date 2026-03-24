@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import {
+  fetchCatalog,
   fetchProviderStatus,
   fetchTryOnResult,
   requestTryOn,
@@ -31,6 +32,8 @@ export default function App() {
   const [statusText, setStatusText] = useState("");
   const [providerStatus, setProviderStatus] = useState(null);
   const [providerLoading, setProviderLoading] = useState(false);
+  const [catalog, setCatalog] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const loadProviderStatus = async () => {
     setProviderLoading(true);
@@ -51,6 +54,26 @@ export default function App() {
   useEffect(() => {
     loadProviderStatus();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const items = await fetchCatalog(category, 16);
+        if (!cancelled) {
+          setCatalog(items);
+          setSelectedProduct(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setCatalog([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -78,7 +101,7 @@ export default function App() {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const pollResult = async (jobId) => {
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 45; i += 1) {
       const job = await fetchTryOnResult(jobId);
       setStatusText(`Job status: ${job.status}`);
       if (job.status === "completed" || job.status === "failed") return job;
@@ -95,7 +118,7 @@ export default function App() {
     try {
       const upload = await uploadPersonImage(imageUri);
       setStatusText("Creating try-on job...");
-      const payload = await requestTryOn(upload.image_url, stylePrompt, category);
+      const payload = await requestTryOn(upload.image_url, stylePrompt, category, selectedProduct);
       setStatusText("Generating outfit...");
       const job = await pollResult(payload.job_id);
       setResult(job);
@@ -162,6 +185,27 @@ export default function App() {
           ))}
         </View>
 
+        <Text style={styles.subtitle}>Outfit (Myntra / Flipkart–style)</Text>
+        <Text style={styles.hint}>Tap a dress to use its photo for try-on.</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catalogScroll}>
+          {catalog.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.catalogCard,
+                selectedProduct?.id === item.id ? styles.catalogCardSelected : null,
+              ]}
+              onPress={() => setSelectedProduct(item)}
+            >
+              <Image source={{ uri: item.image_url }} style={styles.catalogImage} />
+              <Text style={styles.catalogTitle} numberOfLines={2}>
+                {item.retailer ? `${item.retailer} · ` : ""}
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {result?.generated_image_url ? (
           <View style={styles.resultBlock}>
             <Text style={styles.subtitle}>Try-On Result</Text>
@@ -171,7 +215,8 @@ export default function App() {
               <View key={item.id} style={styles.product}>
                 <Text>{item.title}</Text>
                 <Text>
-                  {item.currency} {item.price}
+                  {[item.retailer, item.brand].filter(Boolean).join(" · ")} · {item.currency}{" "}
+                  {item.price}
                 </Text>
                 <Button title="Buy Now" onPress={() => Linking.openURL(item.purchase_url)} />
               </View>
@@ -215,4 +260,18 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#111", borderColor: "#111" },
   chipText: { color: "#333" },
   chipTextActive: { color: "#fff" },
+  hint: { fontSize: 13, color: "#666" },
+  catalogScroll: { marginTop: 6, maxHeight: 200 },
+  catalogCard: {
+    width: 120,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fafafa",
+  },
+  catalogCardSelected: { borderColor: "#111", borderWidth: 2 },
+  catalogImage: { width: "100%", height: 120 },
+  catalogTitle: { fontSize: 11, padding: 6, color: "#333" },
 });

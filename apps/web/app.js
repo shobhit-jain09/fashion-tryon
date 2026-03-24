@@ -7,6 +7,11 @@
     btnHealth: document.getElementById("btnHealth"),
     btnProvider: document.getElementById("btnProvider"),
     outBackend: document.getElementById("outBackend"),
+    btnLoadCatalog: document.getElementById("btnLoadCatalog"),
+    btnFlipkartSearch: document.getElementById("btnFlipkartSearch"),
+    flipkartQuery: document.getElementById("flipkartQuery"),
+    catalogGrid: document.getElementById("catalogGrid"),
+    catalogHint: document.getElementById("catalogHint"),
     fileDrop: document.getElementById("fileDrop"),
     fileInput: document.getElementById("fileInput"),
     previewWrap: document.getElementById("previewWrap"),
@@ -22,6 +27,9 @@
 
   /** @type {File | null} */
   let selectedFile = null;
+
+  /** @type {Record<string, unknown> | null} */
+  let selectedCatalogProduct = null;
 
   function getApiBase() {
     const fromInput = el.apiBase.value.trim();
@@ -69,6 +77,70 @@
     el.statusLine.classList.toggle("error", !!isError);
   }
 
+  function renderCatalog(items) {
+    selectedCatalogProduct = null;
+    el.catalogGrid.innerHTML = "";
+    if (!items || !items.length) {
+      el.catalogHint.textContent = "No items for this category — try another or Flipkart search.";
+      return;
+    }
+    items.forEach((p) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "catalog-tile";
+      btn.innerHTML = `
+        <img src="${escapeAttr(p.image_url)}" alt="" />
+        <div class="cap">
+          <span class="retail">${escapeHtml(p.retailer || "shop")}</span>
+          <strong>${escapeHtml(p.title)}</strong>
+          ${escapeHtml(p.currency || "INR")} ${p.price}
+        </div>
+      `;
+      btn.addEventListener("click", () => {
+        el.catalogGrid.querySelectorAll(".catalog-tile").forEach((t) => t.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedCatalogProduct = p;
+        setStatus(`Selected outfit: ${p.title}`);
+      });
+      el.catalogGrid.appendChild(btn);
+    });
+    el.catalogHint.textContent = `${items.length} items — tap one to use its garment photo for try-on.`;
+  }
+
+  async function loadCatalog() {
+    const cat = el.category.value;
+    try {
+      const items = await fetchJson(
+        `/v1/catalog?category=${encodeURIComponent(cat)}&limit=20`
+      );
+      renderCatalog(items);
+    } catch (e) {
+      el.catalogHint.textContent = "Could not load catalog.";
+      showBackend(e.body || e.message);
+    }
+  }
+
+  async function searchFlipkart() {
+    const q = el.flipkartQuery.value.trim();
+    if (!q) {
+      el.catalogHint.textContent = "Enter a Flipkart search keyword.";
+      return;
+    }
+    try {
+      const items = await fetchJson(
+        `/v1/catalog/flipkart-search?q=${encodeURIComponent(q)}&limit=10`
+      );
+      renderCatalog(items);
+      if (!items.length) {
+        el.catalogHint.textContent = "No Flipkart results — verify affiliate keys in backend .env";
+      }
+    } catch (e) {
+      const detail = e.body && (e.body.detail || e.body.message);
+      el.catalogHint.textContent = detail || e.message || "Flipkart search failed.";
+      showBackend(e.body || e.message);
+    }
+  }
+
   function onFile(file) {
     if (!file || !file.type.startsWith("image/")) {
       setStatus("Please choose an image file.", true);
@@ -109,6 +181,10 @@
       setStatus("Provider status failed.", true);
     }
   });
+
+  el.btnLoadCatalog.addEventListener("click", () => loadCatalog());
+  el.btnFlipkartSearch.addEventListener("click", () => searchFlipkart());
+  el.category.addEventListener("change", () => loadCatalog());
 
   el.fileDrop.addEventListener("click", () => el.fileInput.click());
   el.fileInput.addEventListener("change", () => {
@@ -179,6 +255,19 @@
         style_prompt: el.stylePrompt.value.trim() || "fashion try-on",
         category: el.category.value,
       };
+      if (selectedCatalogProduct) {
+        const p = selectedCatalogProduct;
+        payload.selected_product = {
+          id: p.id,
+          title: p.title,
+          brand: p.brand,
+          price: p.price,
+          currency: p.currency || "INR",
+          image_url: p.image_url,
+          purchase_url: p.purchase_url,
+          retailer: p.retailer || null,
+        };
+      }
 
       const jobStart = await fetchJson("/v1/try-on/request", {
         method: "POST",
@@ -203,7 +292,9 @@
           <img src="${escapeAttr(p.image_url)}" alt="" />
           <div class="product-meta">
             <strong>${escapeHtml(p.title)}</strong>
-            <span>${escapeHtml(p.brand)} · ${escapeHtml(p.currency)} ${p.price}</span>
+            <span>${escapeHtml([p.retailer, p.brand].filter(Boolean).join(" · "))} · ${escapeHtml(
+              String(p.currency)
+            )} ${p.price}</span>
           </div>
           <a href="${escapeAttr(p.purchase_url)}" target="_blank" rel="noopener noreferrer">Buy</a>
         `;
@@ -234,4 +325,5 @@
   }
 
   initApiBaseInput();
+  loadCatalog();
 })();

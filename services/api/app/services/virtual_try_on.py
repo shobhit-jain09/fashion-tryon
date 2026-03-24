@@ -4,50 +4,37 @@ import time
 import uuid
 from datetime import datetime, timezone
 
+from pydantic import TypeAdapter
+
 from app.schemas import Product, TryOnRequest, TryOnResult, TryOnResponse
 from app.services.replicate_provider import (
     ReplicateProviderError,
     create_prediction,
     fetch_prediction,
 )
+from app.services.try_on_products import resolve_garment_and_products
 from app.settings import settings
 
 # MVP in-memory store. Replace with Redis + DB in production.
 JOBS: dict[str, dict] = {}
 
+_product_list_adapter = TypeAdapter(list[Product])
 
-def _build_products(category: str) -> list[Product]:
-    return [
-        Product(
-            id="sku-001",
-            title=f"{category.title()} Trend Jacket",
-            brand="UrbanForm",
-            price=79.99,
-            image_url="https://picsum.photos/seed/jacket/400/400",
-            purchase_url="https://example-shop.com/products/trend-jacket",
-        ),
-        Product(
-            id="sku-002",
-            title=f"{category.title()} Slim Pants",
-            brand="ModeLine",
-            price=54.50,
-            image_url="https://picsum.photos/seed/pants/400/400",
-            purchase_url="https://example-shop.com/products/slim-pants",
-        ),
-        Product(
-            id="sku-003",
-            title=f"{category.title()} Sneakers",
-            brand="StreetLoop",
-            price=92.00,
-            image_url="https://picsum.photos/seed/sneakers/400/400",
-            purchase_url="https://example-shop.com/products/sneakers",
-        ),
-    ]
+
+def _dump_products(products: list[Product]) -> list:
+    return [item.model_dump(mode="json") for item in products]
+
+
+def _load_products(raw: list) -> list[Product]:
+    return _product_list_adapter.validate_python(raw)
 
 
 def create_try_on_job(payload: TryOnRequest) -> TryOnResponse:
     job_id = str(uuid.uuid4())
     created_at = datetime.now(timezone.utc)
+    garment_url, products = resolve_garment_and_products(payload)
+    products_payload = _dump_products(products)
+
     provider = settings.ai_provider.strip().lower()
 
     if provider == "replicate":
@@ -57,11 +44,12 @@ def create_try_on_job(payload: TryOnRequest) -> TryOnResponse:
                 model_version=settings.replicate_model_version,
                 person_image_url=str(payload.person_image_url),
                 style_prompt=payload.style_prompt,
+                garment_image_url=garment_url,
             )
             JOBS[job_id] = {
                 "provider": "replicate",
                 "prediction_id": prediction.get("id"),
-                "category": payload.category,
+                "products_payload": products_payload,
             }
             initial_status = prediction.get("status", "queued")
             if initial_status not in {"queued", "processing", "completed", "failed"}:
@@ -74,8 +62,8 @@ def create_try_on_job(payload: TryOnRequest) -> TryOnResponse:
     JOBS[job_id] = {
         "provider": "mock",
         "created_ts": time.time(),
-        "category": payload.category,
         "result_image": f"https://picsum.photos/seed/{job_id}/900/1200",
+        "products_payload": products_payload,
     }
     return TryOnResponse(job_id=job_id, status="queued", created_at=created_at)
 
@@ -84,6 +72,8 @@ def get_try_on_job(job_id: str) -> TryOnResult:
     job = JOBS.get(job_id)
     if not job:
         return TryOnResult(job_id=job_id, status="failed", error_message="Job not found")
+
+    products = _load_products(job.get("products_payload") or [])
 
     if job.get("provider") == "replicate":
         if job.get("error_message"):
@@ -128,7 +118,7 @@ def get_try_on_job(job_id: str) -> TryOnResult:
             job_id=job_id,
             status="completed",
             generated_image_url=image_url,
-            products=_build_products(job["category"]),
+            products=products,
         )
 
     elapsed = time.time() - job["created_ts"]
@@ -141,5 +131,5 @@ def get_try_on_job(job_id: str) -> TryOnResult:
         job_id=job_id,
         status="completed",
         generated_image_url=job["result_image"],
-        products=_build_products(job["category"]),
+        products=products,
     )

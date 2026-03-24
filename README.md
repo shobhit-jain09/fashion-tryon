@@ -24,7 +24,7 @@ fashion-tryon-app/
     mobile/              # Expo iOS app
     web/                 # Web UI demo (HTML/JS) mounted at /ui
   services/
-    api/                 # FastAPI backend
+    api/                 # FastAPI backend (+ app/data/catalog.json curated outfits)
   AGENT_PROMPT.md        # Exact agent prompt for coding automation
   .env.example
 ```
@@ -69,7 +69,7 @@ If you only open the HTML file (`file://`), set **API base** in the page header 
 3. Run **uvicorn from `services/api`** so uploads and static paths resolve (see commands below).
 4. If `/ui/` returns 404, confirm the folder `apps/web` exists next to `services/` in the repo and restart the server.
 
-5) Configure environment
+### Configure environment
 
 - Copy `.env.example` values to:
   - `services/api/.env`
@@ -77,12 +77,22 @@ If you only open the HTML file (`file://`), set **API base** in the page header 
 
 ## API Flow
 
-1. Mobile uploads user photo -> `POST /v1/try-on/upload`
-2. Mobile creates job -> `POST /v1/try-on/request`
-3. Backend simulates queued -> processing -> completed states
-4. Mobile polls `GET /v1/try-on/{job_id}`
-5. Backend returns generated image URL + mapped products
-6. Mobile opens `purchase_url` in in-app browser or external browser
+1. (Optional) Client loads outfits -> `GET /v1/catalog?category=casual&limit=20`
+2. Mobile uploads user photo -> `POST /v1/try-on/upload`
+3. Mobile creates job -> `POST /v1/try-on/request` (optional `selected_product` with garment image + purchase URL)
+4. Backend simulates queued -> processing -> completed states (or Replicate live)
+5. Mobile polls `GET /v1/try-on/{job_id}`
+6. Backend returns generated image URL + products (Myntra/Flipkart-style links)
+7. Mobile opens `purchase_url` in browser
+
+## Myntra, Flipkart, and “real” dresses
+
+- **Myntra** does not publish an open product API for third-party apps. Legitimate options are **partner/affiliate programs**, **manual curation**, or **your own merchandising feed**. This repo ships `services/api/app/data/catalog.json`: replace entries with **real PDP URLs and images** from your own sourcing or affiliate tools (do not scrape their site against their terms).
+- **Flipkart** offers an **[Affiliate API](https://affiliate.flipkart.com/api-docs/)** for search and feeds. Set `FLIPKART_AFFILIATE_ID` and `FLIPKART_AFFILIATE_TOKEN` in `services/api/.env`, then use:
+  - `GET /v1/catalog/flipkart-search?q=anarkali+kurta`
+  - or `GET /v1/catalog?category=casual&flipkart_query=dress` (merges local + Flipkart results when credentials work)
+
+Try-on quality depends on your **Replicate model**: many virtual try-on models expect **person + garment image**. The backend sends `garment` from the selected catalog item when you pass `selected_product` or a matching `selected_product_id`.
 
 ## Real AI Provider (Replicate)
 

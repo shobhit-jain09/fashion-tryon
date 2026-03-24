@@ -1,0 +1,92 @@
+{
+  "products": [
+    {
+      "id": "in-myntra-ethnic-1",
+      "title": "Women floral print Anarkali kurta (shop similar)",
+      "brand": "Indian wear — Myntra",
+      "price": 899,
+      "currency": "INR",
+      "retailer": "myntra",
+      "purchase_url": "https://www.myntra.com/women-ethnic-wear",
+      "image_url": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80",
+      "categories": ["casual", "formal"]
+    },
+    {
+      "id": "in-myncas-2",
+      "title": "Casual cotton kurti set (shop similar)",
+      "brand": "Daily wear — Myntra",
+      "price": 649,
+      "currency": "INR",
+      "retailer": "myntra",
+      "purchase_url": "https://www.myntra.com/women-kurtas-kurtis-suits",
+      "image_url": "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=800&q=80",
+      "categories": ["casual"]
+    },
+    {
+      "id": "in-myntra-dress-1",
+      "title": "Midi dress — western (shop similar)",
+      "brand": "Dresses — Myntra",
+      "price": 1299,
+      "currency": "INR",
+      "retailer": "myntra",
+      "purchase_url": "https://www.myntra.com/women-dresses",
+      "image_url": "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?auto=format&fit=crop&w=800&q=80",
+      "categories": ["casual", "formal"]
+    },
+    {
+      "id": "in-flip-western-1",
+      "title": "Blazer co-ord set (shop similar)",
+      "brand": "Western — Flipkart",
+      "price": 1499,
+      "currency": "INR",
+      "retailer": "flipkart",
+      "purchase_url": "https://www.flipkart.com/womens-clothing/pr?sid=clo,odx,maj",
+      "image_url": "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=800&q=80",
+      "categories": ["formal", "streetwear"]
+    },
+    {
+      "id": "in-flip-casual-2",
+      "title": "Women denim jacket (shop similar)",
+      "brand": "Casual — Flipkart",
+      "price": 999,
+      "currency": "INR",
+      "retailer": "flipkart",
+      "purchase_url": "https://www.flipkart.com/womens-clothing/pr?sid=clo,cfv",
+      "image_url": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=800&q=80",
+      "categories": ["casual", "streetwear"]
+    },
+    {
+      "id": "in-street-1",
+      "title": "Streetwear hoodie dress (shop similar)",
+      "brand": "Street — Myntra",
+      "price": 1199,
+      "currency": "INR",
+      "retailer": "myntra",
+      "purchase_url": "https://www.myntra.com/hoodies-women",
+      "image_url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
+      "categories": ["streetwear", "casual"]
+    },
+    {
+      "id": "in-sport-1",
+      "title": "Training tights & sports top (shop similar)",
+      "brand": "Sportswear — Flipkart",
+      "price": 849,
+      "currency": "INR",
+      "retailer": "flipkart",
+      "purchase_url": "https://www.flipkart.com/sports-clothing/pr?sid=clo,crs",
+      "image_url": "https://images.unsplash.com/photo-1518459031867-a89b944dffe0?auto=format&fit=crop&w=800&q=80",
+      "categories": ["sportswear"]
+    },
+    {
+      "id": "in-saree-1",
+      "title": "Designer saree drape look (shop similar)",
+      "brand": "Ethnic — Myntra",
+      "price": 2499,
+      "currency": "INR",
+      "retailer": "myntra",
+      "purchase_url": "https://www.myntra.com/women-sarees",
+      "image_url": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e5b?auto=format&fit=crop&w=800&q=80",
+      "categories": ["formal", "casual"]
+    }
+  ]
+}
