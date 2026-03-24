@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Button,
@@ -13,7 +13,12 @@ import {
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { fetchTryOnResult, requestTryOn, uploadPersonImage } from "./src/api";
+import {
+  fetchProviderStatus,
+  fetchTryOnResult,
+  requestTryOn,
+  uploadPersonImage,
+} from "./src/api";
 
 const CATEGORIES = ["casual", "formal", "streetwear", "sportswear"];
 
@@ -24,6 +29,28 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [statusText, setStatusText] = useState("");
+  const [providerStatus, setProviderStatus] = useState(null);
+  const [providerLoading, setProviderLoading] = useState(false);
+
+  const loadProviderStatus = async () => {
+    setProviderLoading(true);
+    try {
+      const status = await fetchProviderStatus();
+      setProviderStatus(status);
+    } catch (error) {
+      setProviderStatus({
+        provider: "unknown",
+        configured: false,
+        warnings: [String(error)],
+      });
+    } finally {
+      setProviderLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProviderStatus();
+  }, []);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -85,6 +112,24 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>AI Fashion Try-On</Text>
+        <View style={styles.statusCard}>
+          <Text style={styles.statusTitle}>Provider Status</Text>
+          {providerLoading ? <ActivityIndicator /> : null}
+          {providerStatus ? (
+            <>
+              <Text>Provider: {providerStatus.provider}</Text>
+              <Text>
+                Configured: {providerStatus.configured ? "Yes" : "No"}
+              </Text>
+              {providerStatus.warnings?.map((w) => (
+                <Text key={w} style={styles.warningText}>
+                  - {w}
+                </Text>
+              ))}
+            </>
+          ) : null}
+          <Button title="Refresh Provider Status" onPress={loadProviderStatus} />
+        </View>
         <View style={styles.actions}>
           <Button title="Pick Photo" onPress={pickImage} />
           <Button title="Take Photo" onPress={takePhoto} />
@@ -144,6 +189,15 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
   container: { padding: 20, gap: 12 },
   actions: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
+  statusCard: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    padding: 10,
+    gap: 6,
+  },
+  statusTitle: { fontSize: 16, fontWeight: "600" },
+  warningText: { color: "#b91c1c" },
   title: { fontSize: 24, fontWeight: "700" },
   subtitle: { fontSize: 18, fontWeight: "600", marginTop: 10 },
   preview: { width: "100%", height: 360, borderRadius: 10, marginTop: 10 },

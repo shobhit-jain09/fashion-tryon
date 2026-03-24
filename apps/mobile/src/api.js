@@ -1,5 +1,11 @@
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8010";
 
+export async function fetchProviderStatus() {
+  const response = await fetch(`${API_BASE_URL}/v1/provider/status`);
+  if (!response.ok) throw new Error("Failed to fetch provider status");
+  return response.json();
+}
+
 export async function uploadPersonImage(imageUri) {
   const formData = new FormData();
   formData.append("image", {

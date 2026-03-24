@@ -82,6 +82,9 @@ How it works:
 - `GET /v1/try-on/{job_id}` fetches prediction status/output
 - Completed prediction output URL is returned as `generated_image_url`
 
+Provider validation endpoint:
+- `GET /v1/provider/status` returns provider config readiness (selected provider, key/model availability, warnings)
+
 ## Apple Store Readiness Checklist
 
 - Add `NSCameraUsageDescription` and photo library permissions in `app.json`

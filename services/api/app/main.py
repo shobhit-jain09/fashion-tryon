@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.routes.provider import router as provider_router
 from app.routes.try_on import router as try_on_router
 
 app = FastAPI(title="AI Fashion Try-On API", version="0.1.0")
@@ -15,6 +16,7 @@ app.add_middleware(
 )
 
 app.include_router(try_on_router)
+app.include_router(provider_router)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
