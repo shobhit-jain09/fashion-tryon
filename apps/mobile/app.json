@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "AI Fashion Try-On",
+    "slug": "ai-fashion-tryon",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.aifashiontryon",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera is used to capture your photo for virtual try-on.",
+        "NSPhotoLibraryUsageDescription": "Photo library access is used to select your photo for virtual try-on."
+      }
+    }
+  }
+}
