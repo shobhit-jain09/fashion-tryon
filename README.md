@@ -59,7 +59,17 @@ You can call **Health**, **Provider status**, upload an image, run **Generate ou
 
 If you only open the HTML file (`file://`), set **API base** in the page header to `http://127.0.0.1:8010` and click **Save**.
 
-4) Configure environment
+### “Page not working” / blank browser
+
+1. **Start the backend first** (nothing will load until it is running).
+2. Open **exactly** (note trailing slash on `/ui/`):
+   - API home: [http://127.0.0.1:8010/](http://127.0.0.1:8010/) — you should see JSON with `"web_ui": "/ui/"`.
+   - Health: [http://127.0.0.1:8010/health](http://127.0.0.1:8010/health) — should be `{"status":"ok"}`.
+   - Web UI: [http://127.0.0.1:8010/ui/](http://127.0.0.1:8010/ui/).
+3. Run **uvicorn from `services/api`** so uploads and static paths resolve (see commands below).
+4. If `/ui/` returns 404, confirm the folder `apps/web` exists next to `services/` in the repo and restart the server.
+
+5) Configure environment
 
 - Copy `.env.example` values to:
   - `services/api/.env`

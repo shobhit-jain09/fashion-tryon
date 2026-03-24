@@ -26,6 +26,16 @@ if _WEB_ROOT.is_dir():
     app.mount("/ui", StaticFiles(directory=str(_WEB_ROOT), html=True), name="ui")
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "message": "AI Fashion Try-On API",
+        "web_ui": "/ui/",
+        "health": "/health",
+        "api_docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
