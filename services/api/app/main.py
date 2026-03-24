@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +20,10 @@ app.add_middleware(
 app.include_router(try_on_router)
 app.include_router(provider_router)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+_WEB_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "apps" / "web"
+if _WEB_ROOT.is_dir():
+    app.mount("/ui", StaticFiles(directory=str(_WEB_ROOT), html=True), name="ui")
 
 
 @app.get("/health")

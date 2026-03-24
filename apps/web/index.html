@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Fashion Try-On — Web Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1>AI Fashion Try-On</h1>
+          <p class="tagline">Upload a photo, generate a look, shop matched items.</p>
+        </div>
+        <div class="header-actions">
+          <label class="field-inline">
+            <span>API base</span>
+            <input type="url" id="apiBase" placeholder="http://127.0.0.1:8010" />
+          </label>
+          <button type="button" class="btn secondary" id="btnSaveBase">Save</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>Backend</h2>
+        <div class="row">
+          <button type="button" class="btn" id="btnHealth">Health</button>
+          <button type="button" class="btn" id="btnProvider">Provider status</button>
+        </div>
+        <pre class="output" id="outBackend" hidden></pre>
+      </section>
+
+      <section class="card grid-two">
+        <div>
+          <h2>Your photo</h2>
+          <label class="file-drop" id="fileDrop">
+            <input type="file" id="fileInput" accept="image/*" hidden />
+            <span>Click or drop an image</span>
+            <small>JPG, PNG — sent to <code>POST /v1/try-on/upload</code></small>
+          </label>
+          <div class="preview-wrap" id="previewWrap" hidden>
+            <img id="preview" alt="Selected photo" />
+          </div>
+        </div>
+        <div>
+          <h2>Style</h2>
+          <label class="field">
+            <span>Prompt</span>
+            <textarea id="stylePrompt" rows="3" placeholder="e.g. minimal streetwear, neutral tones">minimal streetwear look</textarea>
+          </label>
+          <label class="field">
+            <span>Category</span>
+            <select id="category">
+              <option value="casual">Casual</option>
+              <option value="formal">Formal</option>
+              <option value="streetwear">Streetwear</option>
+              <option value="sportswear">Sportswear</option>
+            </select>
+          </label>
+          <button type="button" class="btn primary full" id="btnGenerate" disabled>
+            Generate outfit
+          </button>
+          <p class="hint" id="statusLine"></p>
+        </div>
+      </section>
+
+      <section class="card" id="resultCard" hidden>
+        <h2>Try-on result</h2>
+        <div class="result-layout">
+          <figure class="result-figure">
+            <img id="resultImage" alt="Generated try-on" />
+          </figure>
+          <div>
+            <h3>Shop the look</h3>
+            <ul class="product-list" id="productList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Served from this repo’s <code>apps/web</code>. When backend mounts it at
+          <code>/ui</code>, API calls use the same origin automatically.
+        </p>
+      </footer>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

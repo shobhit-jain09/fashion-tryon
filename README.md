@@ -22,6 +22,7 @@ Production-ready starter architecture for an app that:
 fashion-tryon-app/
   apps/
     mobile/              # Expo iOS app
+    web/                 # Web UI demo (HTML/JS) mounted at /ui
   services/
     api/                 # FastAPI backend
   AGENT_PROMPT.md        # Exact agent prompt for coding automation
@@ -48,7 +49,17 @@ npm install
 npx expo start
 ```
 
-3) Configure environment
+3) Web UI (browser) — talks to the same API
+
+Start the backend, then open:
+
+- [http://127.0.0.1:8010/ui/](http://127.0.0.1:8010/ui/)
+
+You can call **Health**, **Provider status**, upload an image, run **Generate outfit**, and open product buy links.
+
+If you only open the HTML file (`file://`), set **API base** in the page header to `http://127.0.0.1:8010` and click **Save**.
+
+4) Configure environment
 
 - Copy `.env.example` values to:
   - `services/api/.env`
